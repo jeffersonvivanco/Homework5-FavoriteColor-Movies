@@ -8,7 +8,7 @@
 out
 gen
 .gitignore
-.idea/
+
 package.json
 node_modules/
 
