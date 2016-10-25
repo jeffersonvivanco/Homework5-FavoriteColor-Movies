@@ -28,8 +28,23 @@ app.use(bodyParser.urlencoded({extended: false}));
 //------------------------------------------------------------------//
 app.set('view engine', 'hbs');//Set up to use handlebars
 
+/*
+Setting up express-session to show all the movies that have been added by the user
+ */
+var session  = require('express-session');
+var sessionOptions = {
+    secret:'secret for signing session id',
+    saveUninitialized : false,
+    resave : false
+};
+app.use(session(sessionOptions));
+//------------------------------------------------------------------//
+
 
 app.get('/movies', function (req, res) {
+    if(req.session.movies == undefined){
+        req.session.movies  = [];
+    }
     if(req.query.director != undefined && req.query.director != ''){
         Movie.find({director:req.query.director}, function (err, result, count) {
             res.render('movies', {'movies':result});
@@ -57,7 +72,8 @@ app.post('/movies/add', function (req, res) {
             year:year,
             director:director
         }).save(function (err, movie, count) {
-           res.redirect('/movies')
+            req.session.movies.push(movie);
+           res.redirect('/movies');
         });
     }
     else{
@@ -65,6 +81,11 @@ app.post('/movies/add', function (req, res) {
     }
 });
 
+app.get('/mymovies', function (req, res) {
+
+    res.render('my-movies',{'userMovies':req.session.movies});
+
+});
 
 
 app.listen(3000);

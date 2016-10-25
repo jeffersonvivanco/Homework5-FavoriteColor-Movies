@@ -1,15 +1,13 @@
-<h1>Let's watch some movies!</h1>
-<form method="GET" action="">
-    Director: <input type="text" name="director"><input type="submit" value="filter">
-</form>
-
+<h2>Movies Added by Me</h2>
+<br>
+<br>
 <table align="center">
     <tr>
         <th>Title</th>
         <th>Year</th>
         <th>Director</th>
     </tr>
-    {{#each movies}}
+    {{#each userMovies}}
         <tr>
             <td>{{this.title}}</td>
             <td>{{this.year}}</td>
@@ -17,5 +15,4 @@
         </tr>
     {{/each}}
 </table>
-<a href="/movies/add">Add a movie</a><br>
-<a href="/mymovies">My movies</a>
+<a href="/movies">Home</a>

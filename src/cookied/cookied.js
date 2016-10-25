@@ -8,49 +8,53 @@ var uuid = require('node-uuid');
 var f = {
     uuid : require('node-uuid'),
     parseCookies : function (req, res, next) {
-        if (req) {
-            var Cookie = '';
-            if(req.get('Cookie')!=undefined)
-                Cookie = req.get('Cookie').split('=');
-            else{
-                Cookie = 'sessionId='+uuid.v4();
-            }
+        if(req.get('Cookie')!=undefined){
+            var Cookie = req.get('Cookie').split(';');
             if(!req.hasOwnProperty('hwCookies')){
                 req.hwCookies = {};
             }
-            var CookieObj = {};
-            for(var i=0; i<Cookie.length; i = i+2){
-                CookieObj[Cookie[i]] = Cookie[i+1];
+            for(var i=0; i<Cookie.length; i++){
+                var line  = Cookie[i].split('=');
+                req.hwCookies[line[0]] = line[1];
             }
-
-            for (var name in CookieObj) {
-                req.hwCookies[name] = CookieObj[name];
-            }
-            next();
         }
+        next();
     },
     manageSession : function (req, res, next) {
         if(!this.hasOwnProperty('sessionStore')){
             this.sessionStore = {};
         }
-        if(req){
+        if(req.hwCookies){
             if(!req.hasOwnProperty('hwSession')){
                 req['hwSession'] = {};
             }
             if(req.hwCookies.hasOwnProperty('sessionId') && this.sessionStore[req.hwCookies['sessionId']]){
                 req.hwSession = this.sessionStore[req.hwCookies['sessionId']];
                 req.hwSession['sessionId'] = req.hwCookies['sessionId'];
+                console.log('session already exists: '+req.hwCookies['sessionId']);
             }
             else{
                 var newSessionId = uuid.v4();
                 this.sessionStore[newSessionId] = {};
-                res.append('Set-Cookie', 'sessionId ='+newSessionId);
+                res.append('Set-Cookie', 'sessionId='+newSessionId);
                 req.hwSession  = this.sessionStore[newSessionId];
                 req.hwSession['sessionId'] = newSessionId;
+                console.log('session generated: '+newSessionId);
             }
-
-            next();
         }
+
+        else {
+            var newSessionId = uuid.v4();
+            this.sessionStore[newSessionId] = {};
+            res.append('Set-Cookie', 'sessionId='+newSessionId);
+            req.hwSession  = this.sessionStore[newSessionId];
+            req.hwSession['sessionId'] = newSessionId;
+            console.log('session generated: '+newSessionId);
+        }
+
+
+
+        next();
     }
 
 };
